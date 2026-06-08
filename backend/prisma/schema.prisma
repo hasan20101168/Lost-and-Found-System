@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  role      Role       @default(USER)
+  lostItems LostItem[]
+}
+
+model LostItem {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String
+  category    String
+  location    String
+  dateLost    DateTime
+  reward      Float?
+  imageUrl    String?
+  status      ItemStatus @default(LOST)
+  userId      Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ItemStatus {
+  LOST
+  FOUND
+  CLAIMED
+  RESOLVED
+}
