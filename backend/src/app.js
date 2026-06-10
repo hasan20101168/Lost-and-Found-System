@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
 
@@ -27,6 +28,25 @@ app.get("/", (req, res) => {
     success: true,
     message: "Lost & Found API is running",
   });
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      message:
+        err.code === "LIMIT_FILE_SIZE"
+          ? "Image must be smaller than 5MB"
+          : err.message
+    });
+  }
+
+  if (err.message === "Only image files are allowed") {
+    return res.status(400).json({
+      message: err.message
+    });
+  }
+
+  next(err);
 });
 
 module.exports = app;

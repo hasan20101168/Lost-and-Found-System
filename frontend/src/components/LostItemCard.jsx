@@ -1,6 +1,14 @@
 function LostItemCard({ item }) {
   return (
     <div className="item-card">
+      {item.imageUrl && (
+        <img
+          src={item.imageUrl}
+          alt={item.title}
+          className="item-image"
+        />
+      )}
+
       <h3>{item.title}</h3>
 
       <p>

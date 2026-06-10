@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState
+} from "react";
 import { createLostItem } from "../services/lostItemService";
 import { useNavigate } from "react-router-dom";
 
@@ -11,10 +14,20 @@ function CreateLostItem() {
     category: "",
     location: "",
     dateLost: "",
-    reward: ""
+    reward: "",
+    image: null
   });
 
   const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -23,13 +36,36 @@ function CreateLostItem() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0] || null;
+
+    setFormData((prev) => ({
+      ...prev,
+      image: file
+    }));
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setPreviewUrl(file ? URL.createObjectURL(file) : "");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       setLoading(true);
 
-      await createLostItem(formData);
+      const payload = new FormData();
+
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null && value !== "") {
+          payload.append(key, value);
+        }
+      });
+
+      await createLostItem(payload);
 
       alert("Lost item created successfully");
 
@@ -102,6 +138,24 @@ function CreateLostItem() {
           value={formData.reward}
           onChange={handleChange}
         />
+
+        <label className="file-field">
+          <span>Item photo (optional)</span>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+        </label>
+
+        {previewUrl && (
+          <img
+            src={previewUrl}
+            alt="Selected lost item preview"
+            className="image-preview"
+          />
+        )}
 
         <button
           type="submit"

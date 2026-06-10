@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState
 } from "react";
@@ -10,8 +8,7 @@ import {
   registerUser,
   getProfile
 } from "../services/authService";
-
-const AuthContext = createContext();
+import { AuthContext } from "./authContextCore";
 
 export const AuthProvider = ({
   children
@@ -105,6 +102,3 @@ export const AuthProvider = ({
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () =>
-  useContext(AuthContext);

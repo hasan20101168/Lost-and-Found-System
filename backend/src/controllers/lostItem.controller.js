@@ -1,4 +1,8 @@
 const prisma = require("../config/prisma");
+const uploadToCloudinary = require("../utils/uploadToCloudinary");
+const {
+  CloudinaryUploadError
+} = require("../utils/uploadToCloudinary");
 
 exports.createLostItem = async (
   req,
@@ -36,6 +40,40 @@ exports.createLostItem = async (
       });
     }
 
+    let imageUrl = null;
+
+    if (req.file) {
+      const missingCloudinaryConfig = [
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET"
+      ].some((key) => !process.env[key]?.trim());
+
+      if (missingCloudinaryConfig) {
+        return res.status(500).json({
+          message: "Cloudinary configuration is missing"
+        });
+      }
+
+      let uploadResult;
+
+      try {
+        uploadResult =
+          await uploadToCloudinary(req.file.buffer);
+      } catch (error) {
+        if (error instanceof CloudinaryUploadError) {
+          return res.status(502).json({
+            message: error.message,
+            cloudinaryStatusCode: error.statusCode
+          });
+        }
+
+        throw error;
+      }
+
+      imageUrl = uploadResult.secure_url;
+    }
+
     const item =
       await prisma.lostItem.create({
         data: {
@@ -45,6 +83,7 @@ exports.createLostItem = async (
           location,
           dateLost: parsedDateLost,
           reward: parsedReward,
+          imageUrl,
           userId: req.user.id
         }
       });

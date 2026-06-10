@@ -12,6 +12,7 @@ const {
 } = require("../controllers/lostItem.controller");
 
 const auth = require("../middlewares/auth.middleware");
+const upload = require("../middlewares/upload.middleware");
 
 // Public routes
 router.get("/", getAllLostItems);
@@ -23,7 +24,12 @@ router.get(
 router.get("/:id", getLostItemById);
 
 // Protected routes
-router.post("/", auth, createLostItem);
+router.post(
+  "/",
+  auth,
+  upload.single("image"),
+  createLostItem
+);
 router.put("/:id", auth, updateLostItem);
 router.delete("/:id", auth, deleteLostItem);
 

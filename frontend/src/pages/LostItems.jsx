@@ -6,19 +6,30 @@ function LostItems() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchItems = async () => {
-    try {
-      const data = await getLostItems();
-      setItems(data);
-    } catch (error) {
-      console.error(error);
-    }
-
-    setLoading(false);
-  };
-
   useEffect(() => {
+    let isActive = true;
+
+    const fetchItems = async () => {
+      try {
+        const data = await getLostItems();
+
+        if (isActive) {
+          setItems(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchItems();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   if (loading) {
