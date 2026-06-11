@@ -19,6 +19,13 @@ function Dashboard() {
         </Link> <br />
 
         <Link
+          to="/create-found-item"
+          className="btn"
+        >
+          Report Found Item
+        </Link> <br />
+
+        <Link
           to="/lost-items"
           className="btn"
         >
@@ -26,10 +33,45 @@ function Dashboard() {
         </Link> <br />
 
         <Link
+          to="/found-items"
+          className="btn"
+        >
+          Browse Found Items
+        </Link> <br />
+
+        <Link
+          to="/matches"
+          className="btn"
+        >
+          View Matches
+        </Link> <br />
+
+        <Link
           to="/my-items"
           className="btn"
         >
           My Lost Items
+        </Link> <br />
+
+        <Link
+          to="/my-found-items"
+          className="btn"
+        >
+          My Found Items
+        </Link> <br />
+
+        <Link
+          to="/my-claims"
+          className="btn"
+        >
+          My Claim Requests
+        </Link> <br />
+
+        <Link
+          to="/review-claims"
+          className="btn"
+        >
+          Review Claim Requests
         </Link>
       </div>
     </div>

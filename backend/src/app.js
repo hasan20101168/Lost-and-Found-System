@@ -5,7 +5,10 @@ const multer = require("multer");
 const app = express();
 
 const lostItemRoutes = require("./routes/lostItem.routes");
+const foundItemRoutes = require("./routes/foundItem.routes");
 const authRoutes = require("./routes/auth.routes");
+const matchRoutes = require("./routes/match.routes");
+const claimRequestRoutes = require("./routes/claimRequest.routes");
 
 // Middleware
 app.use(
@@ -21,6 +24,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/lost-items", lostItemRoutes);
+app.use("/api/found-items", foundItemRoutes);
+app.use("/api/matches", matchRoutes);
+app.use("/api/claims", claimRequestRoutes);
 
 // Health Check Route
 app.get("/", (req, res) => {

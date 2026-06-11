@@ -3,6 +3,11 @@ const uploadToCloudinary = require("../utils/uploadToCloudinary");
 const {
   CloudinaryUploadError
 } = require("../utils/uploadToCloudinary");
+const {
+  buildItemWhere,
+  getOrderBy,
+  sortByRelevance
+} = require("../utils/itemSearch");
 
 exports.createLostItem = async (
   req,
@@ -98,13 +103,63 @@ exports.createLostItem = async (
 
 exports.getAllLostItems = async (req, res) => {
   try {
+    const keywordFields = [
+      "title",
+      "description",
+      "category",
+      "location"
+    ];
+
     const items = await prisma.lostItem.findMany({
+      where: buildItemWhere(req.query, {
+        locationField: "location",
+        dateField: "dateLost",
+        keywordFields
+      }),
       include: {
         user: true
+      },
+      orderBy: getOrderBy(req.query.sort)
+    });
+
+    const sortedItems =
+      req.query.sort === "relevant"
+        ? sortByRelevance(
+            items,
+            req.query.keyword,
+            keywordFields
+          )
+        : items;
+
+    res.json(sortedItems);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getLostItemFilters = async (req, res) => {
+  try {
+    const items = await prisma.lostItem.findMany({
+      select: {
+        category: true,
+        location: true,
+        status: true
       }
     });
 
-    res.json(items);
+    res.json({
+      categories: [
+        ...new Set(items.map((item) => item.category))
+      ].sort(),
+      locations: [
+        ...new Set(items.map((item) => item.location))
+      ].sort(),
+      statuses: [
+        ...new Set(items.map((item) => item.status))
+      ].sort()
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message

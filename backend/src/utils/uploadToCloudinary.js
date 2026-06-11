@@ -8,11 +8,14 @@ class CloudinaryUploadError extends Error {
   }
 }
 
-const uploadToCloudinary = (fileBuffer) =>
+const uploadToCloudinary = (
+  fileBuffer,
+  folder = "lost-and-found/lost-items"
+) =>
   new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "lost-and-found/lost-items",
+        folder,
         resource_type: "image"
       },
       (error, result) => {

@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   createLostItem,
   getAllLostItems,
+  getLostItemFilters,
   getLostItemById,
   updateLostItem,
   deleteLostItem,
@@ -16,6 +17,7 @@ const upload = require("../middlewares/upload.middleware");
 
 // Public routes
 router.get("/", getAllLostItems);
+router.get("/filters", getLostItemFilters);
 router.get(
   "/my-items",
   auth,

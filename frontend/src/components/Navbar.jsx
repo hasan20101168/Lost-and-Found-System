@@ -24,6 +24,14 @@ function Navbar() {
         Lost Items
       </Link>
 
+      <Link to="/found-items">
+        Found Items
+      </Link>
+
+      <Link to="/matches">
+        Matches
+      </Link>
+
       {user ? (
       <>
         <Link to="/dashboard">
@@ -32,6 +40,18 @@ function Navbar() {
 
         <Link to="/create-lost-item">
           Report Lost Item
+        </Link>
+
+        <Link to="/create-found-item">
+          Report Found Item
+        </Link>
+
+        <Link to="/my-claims">
+          My Claims
+        </Link>
+
+        <Link to="/review-claims">
+          Review Claims
         </Link>
 
         <button onClick={logout}>

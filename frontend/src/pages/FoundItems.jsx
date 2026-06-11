@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
 import {
-  getLostItemFilters,
-  getLostItems
-} from "../services/lostItemService";
-import LostItemCard from "../components/LostItemCard";
+  useEffect,
+  useState
+} from "react";
+import {
+  getFoundItemFilters,
+  getFoundItems
+} from "../services/foundItemService";
+import FoundItemCard from "../components/FoundItemCard";
 import ItemSearchFilters from "../components/ItemSearchFilters";
 
 const defaultFilters = {
@@ -21,7 +24,7 @@ const defaultOptions = {
   statuses: []
 };
 
-function LostItems() {
+function FoundItems() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(defaultFilters);
@@ -33,7 +36,7 @@ function LostItems() {
 
     const fetchItems = async () => {
       try {
-        const data = await getLostItems(filters);
+        const data = await getFoundItems(filters);
 
         if (isActive) {
           setItems(data);
@@ -59,7 +62,7 @@ function LostItems() {
 
     const fetchFilters = async () => {
       try {
-        const data = await getLostItemFilters();
+        const data = await getFoundItemFilters();
 
         if (isActive) {
           setFilterOptions(data);
@@ -82,7 +85,7 @@ function LostItems() {
 
   return (
     <div className="container">
-      <h1>Lost Items</h1>
+      <h1>Found Items</h1>
 
       <ItemSearchFilters
         filters={filters}
@@ -92,14 +95,17 @@ function LostItems() {
       />
 
       {items.length === 0 ? (
-        <p>No lost items found.</p>
+        <p>No found items reported.</p>
       ) : (
         items.map((item) => (
-          <LostItemCard key={item.id} item={item} />
+          <FoundItemCard
+            key={item.id}
+            item={item}
+          />
         ))
       )}
     </div>
   );
 }
 
-export default LostItems;
+export default FoundItems;

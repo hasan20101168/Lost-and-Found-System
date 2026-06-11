@@ -15,6 +15,8 @@ model User {
   createdAt DateTime   @default(now())
   role      Role       @default(USER)
   lostItems LostItem[]
+  foundItems FoundItem[]
+  claimRequests ClaimRequest[]
 }
 
 model LostItem {
@@ -33,6 +35,38 @@ model LostItem {
   user        User       @relation(fields: [userId], references: [id])
 }
 
+model FoundItem {
+  id              Int        @id @default(autoincrement())
+  title           String
+  description     String
+  category        String
+  foundLocation   String
+  dateFound       DateTime
+  storageLocation String
+  contactInfo     String
+  imageUrl        String?
+  status          ItemStatus @default(FOUND)
+  userId          Int
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  user            User       @relation(fields: [userId], references: [id])
+  claimRequests   ClaimRequest[]
+}
+
+model ClaimRequest {
+  id               Int         @id @default(autoincrement())
+  proofOfOwnership String
+  status           ClaimStatus @default(PENDING)
+  foundItemId      Int
+  claimantId       Int
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  foundItem        FoundItem   @relation(fields: [foundItemId], references: [id])
+  claimant         User        @relation(fields: [claimantId], references: [id])
+
+  @@unique([foundItemId, claimantId])
+}
+
 enum Role {
   USER
   ADMIN
@@ -43,4 +77,10 @@ enum ItemStatus {
   FOUND
   CLAIMED
   RESOLVED
+}
+
+enum ClaimStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
