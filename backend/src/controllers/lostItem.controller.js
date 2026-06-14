@@ -208,9 +208,81 @@ exports.updateLostItem = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
+    const existingItem =
+      await prisma.lostItem.findUnique({
+        where: { id }
+      });
+
+    if (!existingItem) {
+      return res.status(404).json({
+        message: "Item not found"
+      });
+    }
+
+    if (
+      existingItem.userId !== req.user.id &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
+        message: "You can only edit your own lost items"
+      });
+    }
+
+    const {
+      title,
+      description,
+      category,
+      location,
+      dateLost,
+      reward,
+      status
+    } = req.body;
+
+    const data = {
+      title,
+      description,
+      category,
+      location,
+      status
+    };
+
+    Object.keys(data).forEach((key) => {
+      if (data[key] === undefined) {
+        delete data[key];
+      }
+    });
+
+    if (dateLost !== undefined) {
+      const parsedDateLost = new Date(dateLost);
+
+      if (Number.isNaN(parsedDateLost.getTime())) {
+        return res.status(400).json({
+          message: "Invalid date lost"
+        });
+      }
+
+      data.dateLost = parsedDateLost;
+    }
+
+    if (reward !== undefined) {
+      const parsedReward =
+        reward === "" ? null : Number(reward);
+
+      if (
+        parsedReward !== null &&
+        Number.isNaN(parsedReward)
+      ) {
+        return res.status(400).json({
+          message: "Reward must be a valid number"
+        });
+      }
+
+      data.reward = parsedReward;
+    }
+
     const item = await prisma.lostItem.update({
       where: { id },
-      data: req.body
+      data
     });
 
     res.json(item);
@@ -225,8 +297,70 @@ exports.deleteLostItem = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    await prisma.lostItem.delete({
-      where: { id }
+    const item =
+      await prisma.lostItem.findUnique({
+        where: { id }
+      });
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found"
+      });
+    }
+
+    if (
+      item.userId !== req.user.id &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
+        message: "You can only delete your own lost items"
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const conversations =
+        await tx.conversation.findMany({
+          where: {
+            lostItemId: id
+          },
+          select: {
+            id: true
+          }
+        });
+
+      const conversationIds =
+        conversations.map(
+          (conversation) => conversation.id
+        );
+
+      if (conversationIds.length > 0) {
+        await tx.message.deleteMany({
+          where: {
+            conversationId: {
+              in: conversationIds
+            }
+          }
+        });
+
+        await tx.conversation.deleteMany({
+          where: {
+            id: {
+              in: conversationIds
+            }
+          }
+        });
+      }
+
+      await tx.report.deleteMany({
+        where: {
+          itemType: "LOST_ITEM",
+          itemId: id
+        }
+      });
+
+      await tx.lostItem.delete({
+        where: { id }
+      });
     });
 
     res.json({

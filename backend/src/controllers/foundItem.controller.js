@@ -256,10 +256,74 @@ exports.updateFoundItem = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
+    const existingItem =
+      await prisma.foundItem.findUnique({
+        where: { id }
+      });
+
+    if (!existingItem) {
+      return res.status(404).json({
+        message: "Found item not found"
+      });
+    }
+
+    if (
+      existingItem.userId !== req.user.id &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
+        message: "You can only edit your own found items"
+      });
+    }
+
+    const {
+      title,
+      description,
+      category,
+      foundLocation,
+      dateFound,
+      storageLocation,
+      contactInfo,
+      status
+    } = req.body;
+
+    const data = {
+      title,
+      description,
+      category,
+      foundLocation,
+      storageLocation,
+      contactInfo,
+      status
+    };
+
+    Object.keys(data).forEach((key) => {
+      if (data[key] === undefined) {
+        delete data[key];
+      }
+    });
+
+    if (dateFound !== undefined) {
+      const parsedDateFound =
+        new Date(dateFound);
+
+      if (
+        Number.isNaN(
+          parsedDateFound.getTime()
+        )
+      ) {
+        return res.status(400).json({
+          message: "Invalid date found"
+        });
+      }
+
+      data.dateFound = parsedDateFound;
+    }
+
     const item =
       await prisma.foundItem.update({
         where: { id },
-        data: req.body
+        data
       });
 
     res.json(item);
@@ -274,8 +338,76 @@ exports.deleteFoundItem = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    await prisma.foundItem.delete({
-      where: { id }
+    const item =
+      await prisma.foundItem.findUnique({
+        where: { id }
+      });
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Found item not found"
+      });
+    }
+
+    if (
+      item.userId !== req.user.id &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
+        message: "You can only delete your own found items"
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const conversations =
+        await tx.conversation.findMany({
+          where: {
+            foundItemId: id
+          },
+          select: {
+            id: true
+          }
+        });
+
+      const conversationIds =
+        conversations.map(
+          (conversation) => conversation.id
+        );
+
+      if (conversationIds.length > 0) {
+        await tx.message.deleteMany({
+          where: {
+            conversationId: {
+              in: conversationIds
+            }
+          }
+        });
+
+        await tx.conversation.deleteMany({
+          where: {
+            id: {
+              in: conversationIds
+            }
+          }
+        });
+      }
+
+      await tx.claimRequest.deleteMany({
+        where: {
+          foundItemId: id
+        }
+      });
+
+      await tx.report.deleteMany({
+        where: {
+          itemType: "FOUND_ITEM",
+          itemId: id
+        }
+      });
+
+      await tx.foundItem.delete({
+        where: { id }
+      });
     });
 
     res.json({

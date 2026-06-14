@@ -164,3 +164,55 @@ exports.getProfile = async (req, res) => {
 
   res.json(sanitizeUser(user));
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim();
+
+    if (!name || !email) {
+      return res.status(400).json({
+        message: "Name and email are required"
+      });
+    }
+
+    if (
+      isAdminEmail(email) &&
+      req.user.role !== "ADMIN"
+    ) {
+      return res.status(403).json({
+        message: "This email is reserved for admin use"
+      });
+    }
+
+    const existingUser =
+      await prisma.user.findUnique({
+        where: { email }
+      });
+
+    if (
+      existingUser &&
+      existingUser.id !== req.user.id
+    ) {
+      return res.status(400).json({
+        message: "Email already exists"
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: {
+        id: req.user.id
+      },
+      data: {
+        name,
+        email
+      }
+    });
+
+    res.json(sanitizeUser(user));
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};

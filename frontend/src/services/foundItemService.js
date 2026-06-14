@@ -39,3 +39,23 @@ export const createFoundItem = async (
 
   return response.data;
 };
+
+export const updateFoundItem = async (
+  id,
+  itemData
+) => {
+  const response = await api.put(
+    `/found-items/${id}`,
+    itemData
+  );
+
+  return response.data;
+};
+
+export const deleteFoundItem = async (id) => {
+  const response = await api.delete(
+    `/found-items/${id}`
+  );
+
+  return response.data;
+};

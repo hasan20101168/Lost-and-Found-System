@@ -6,7 +6,8 @@ import {
 import {
   loginUser,
   registerUser,
-  getProfile
+  getProfile,
+  updateProfile as saveProfile
 } from "../services/authService";
 import { AuthContext } from "./authContextCore";
 
@@ -92,6 +93,17 @@ export const AuthProvider = ({
     setUser(null);
   };
 
+  const updateProfile = async (
+    profileData
+  ) => {
+    const updatedUser =
+      await saveProfile(profileData);
+
+    setUser(updatedUser);
+
+    return updatedUser;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -99,6 +111,7 @@ export const AuthProvider = ({
         loading,
         login,
         register,
+        updateProfile,
         logout
       }}
     >

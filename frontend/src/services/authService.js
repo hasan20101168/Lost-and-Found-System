@@ -25,3 +25,14 @@ export const getProfile = async () => {
 
   return response.data;
 };
+
+export const updateProfile = async (
+  profileData
+) => {
+  const response = await api.patch(
+    "/auth/profile",
+    profileData
+  );
+
+  return response.data;
+};
