@@ -38,6 +38,12 @@ function Navbar() {
           Dashboard
         </Link>
 
+        {user.role === "ADMIN" && (
+          <Link to="/admin">
+            Admin
+          </Link>
+        )}
+
         <Link to="/create-lost-item">
           Report Lost Item
         </Link>
@@ -52,6 +58,14 @@ function Navbar() {
 
         <Link to="/review-claims">
           Review Claims
+        </Link>
+
+        <Link to="/messages">
+          Messages
+        </Link>
+
+        <Link to="/notifications">
+          Notifications
         </Link>
 
         <button onClick={logout}>

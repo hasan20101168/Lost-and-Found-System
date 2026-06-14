@@ -17,6 +17,11 @@ model User {
   lostItems LostItem[]
   foundItems FoundItem[]
   claimRequests ClaimRequest[]
+  ownedConversations Conversation[] @relation("OwnerConversations")
+  finderConversations Conversation[] @relation("FinderConversations")
+  sentMessages Message[]
+  notifications Notification[]
+  reports Report[]
 }
 
 model LostItem {
@@ -33,6 +38,7 @@ model LostItem {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   user        User       @relation(fields: [userId], references: [id])
+  conversations Conversation[]
 }
 
 model FoundItem {
@@ -51,6 +57,7 @@ model FoundItem {
   updatedAt       DateTime   @updatedAt
   user            User       @relation(fields: [userId], references: [id])
   claimRequests   ClaimRequest[]
+  conversations   Conversation[]
 }
 
 model ClaimRequest {
@@ -63,8 +70,76 @@ model ClaimRequest {
   updatedAt        DateTime    @updatedAt
   foundItem        FoundItem   @relation(fields: [foundItemId], references: [id])
   claimant         User        @relation(fields: [claimantId], references: [id])
+  conversation     Conversation?
 
   @@unique([foundItemId, claimantId])
+}
+
+model Conversation {
+  id             Int           @id @default(autoincrement())
+  ownerId        Int
+  finderId       Int
+  lostItemId     Int?
+  foundItemId    Int?
+  claimRequestId Int?          @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  owner          User          @relation("OwnerConversations", fields: [ownerId], references: [id])
+  finder         User          @relation("FinderConversations", fields: [finderId], references: [id])
+  lostItem       LostItem?     @relation(fields: [lostItemId], references: [id])
+  foundItem      FoundItem?    @relation(fields: [foundItemId], references: [id])
+  claimRequest   ClaimRequest? @relation(fields: [claimRequestId], references: [id])
+  messages       Message[]
+
+  @@unique([ownerId, finderId, lostItemId, foundItemId])
+  @@index([ownerId])
+  @@index([finderId])
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}
+
+model Report {
+  id         Int          @id @default(autoincrement())
+  itemType   ReportItemType
+  itemId     Int
+  reason     String
+  details    String?
+  status     ReportStatus @default(OPEN)
+  reporterId Int
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  reporter   User         @relation(fields: [reporterId], references: [id])
+
+  @@index([itemType, itemId])
+  @@index([status])
+  @@index([reporterId])
 }
 
 enum Role {
@@ -83,4 +158,21 @@ enum ClaimStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+enum NotificationType {
+  NEW_MATCH
+  CLAIM_UPDATE
+  NEW_MESSAGE
+}
+
+enum ReportItemType {
+  LOST_ITEM
+  FOUND_ITEM
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
 }

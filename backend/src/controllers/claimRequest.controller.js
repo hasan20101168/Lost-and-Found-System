@@ -1,4 +1,7 @@
 const prisma = require("../config/prisma");
+const {
+  createNotification
+} = require("../services/notification.service");
 
 const claimInclude = {
   foundItem: {
@@ -87,6 +90,14 @@ exports.createClaimRequest = async (
         },
         include: claimInclude
       });
+
+    await createNotification({
+      userId: claim.foundItem.userId,
+      type: "CLAIM_UPDATE",
+      title: "New claim request",
+      message: `${claim.claimant.name} submitted a claim for ${claim.foundItem.title}.`,
+      link: "/review-claims"
+    });
 
     res.status(201).json(claim);
   } catch (error) {
@@ -250,6 +261,14 @@ exports.updateClaimRequestStatus = async (
             ]
           : [])
       ]);
+
+    await createNotification({
+      userId: updatedClaim.claimantId,
+      type: "CLAIM_UPDATE",
+      title: "Claim updated",
+      message: `Your claim for ${updatedClaim.foundItem.title} was ${updatedClaim.status.toLowerCase()}.`,
+      link: "/my-claims"
+    });
 
     res.json(updatedClaim);
   } catch (error) {

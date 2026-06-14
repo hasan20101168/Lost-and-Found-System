@@ -18,6 +18,10 @@ import MyItems from "./pages/MyItems";
 import MyFoundItems from "./pages/MyFoundItems";
 import MyClaims from "./pages/MyClaims";
 import ReviewClaims from "./pages/ReviewClaims";
+import Messages from "./pages/Messages";
+import Conversation from "./pages/Conversation";
+import Notifications from "./pages/Notifications";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import Navbar from "./components/Navbar";
 
@@ -116,10 +120,46 @@ function App() {
         />
 
         <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/messages/:id"
+          element={
+            <ProtectedRoute>
+              <Conversation />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

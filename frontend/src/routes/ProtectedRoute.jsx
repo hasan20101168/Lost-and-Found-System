@@ -3,7 +3,8 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function ProtectedRoute({
-  children
+  children,
+  roles
 }) {
   const { user, loading } =
     useAuth();
@@ -15,6 +16,15 @@ function ProtectedRoute({
   if (!user) {
     return (
       <Navigate to="/login" />
+    );
+  }
+
+  if (
+    roles?.length &&
+    !roles.includes(user.role)
+  ) {
+    return (
+      <Navigate to="/dashboard" />
     );
   }
 

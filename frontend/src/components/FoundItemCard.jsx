@@ -3,6 +3,7 @@ import {
 } from "react";
 import { useAuth } from "../context/useAuth";
 import { createClaimRequest } from "../services/claimRequestService";
+import { createReport } from "../services/reportService";
 
 function FoundItemCard({ item }) {
   const {
@@ -13,6 +14,8 @@ function FoundItemCard({ item }) {
   const [proofOfOwnership, setProofOfOwnership] =
     useState("");
   const [claimMessage, setClaimMessage] =
+    useState("");
+  const [reportMessage, setReportMessage] =
     useState("");
   const [submitting, setSubmitting] =
     useState(false);
@@ -45,6 +48,31 @@ function FoundItemCard({ item }) {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleReport = async () => {
+    const reason = window.prompt(
+      "Why are you reporting this found item?"
+    );
+
+    if (!reason?.trim()) {
+      return;
+    }
+
+    try {
+      await createReport({
+        itemType: "FOUND_ITEM",
+        itemId: item.id,
+        reason
+      });
+
+      setReportMessage("Report submitted.");
+    } catch (error) {
+      setReportMessage(
+        error.response?.data?.message ||
+          "Could not submit report"
+      );
     }
   };
 
@@ -140,9 +168,25 @@ function FoundItemCard({ item }) {
         </div>
       )}
 
+      {user && user.id !== item.userId && (
+        <button
+          type="button"
+          className="secondary-button report-button"
+          onClick={handleReport}
+        >
+          Report Post
+        </button>
+      )}
+
       {claimMessage && (
         <p className="claim-message">
           {claimMessage}
+        </p>
+      )}
+
+      {reportMessage && (
+        <p className="claim-message">
+          {reportMessage}
         </p>
       )}
     </div>

@@ -11,6 +11,17 @@ function Dashboard() {
       <h3>Welcome, {user?.name}</h3>
 
       <div className="dashboard-actions">
+        {user?.role === "ADMIN" && (
+          <>
+            <Link
+              to="/admin"
+              className="btn"
+            >
+              Admin Dashboard
+            </Link> <br />
+          </>
+        )}
+
         <Link
           to="/create-lost-item"
           className="btn"
@@ -72,6 +83,22 @@ function Dashboard() {
           className="btn"
         >
           Review Claim Requests
+        </Link>
+        <br />
+
+        <Link
+          to="/messages"
+          className="btn"
+        >
+          Messages
+        </Link>
+        <br />
+
+        <Link
+          to="/notifications"
+          className="btn"
+        >
+          Notifications
         </Link>
       </div>
     </div>

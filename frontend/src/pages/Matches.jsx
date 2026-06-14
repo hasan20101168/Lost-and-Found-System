@@ -2,6 +2,9 @@ import {
   useEffect,
   useState
 } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+import { createConversation } from "../services/conversationService";
 import { getMatches } from "../services/matchService";
 
 const formatDate = (date) =>
@@ -73,9 +76,13 @@ const MatchReasons = ({ match }) => {
 };
 
 function Matches() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [minScore, setMinScore] = useState(30);
+  const [messageError, setMessageError] =
+    useState("");
 
   useEffect(() => {
     let isActive = true;
@@ -106,6 +113,28 @@ function Matches() {
       isActive = false;
     };
   }, [minScore]);
+
+  const handleMessage = async (match) => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const conversation =
+        await createConversation({
+          lostItemId: match.lostItem.id,
+          foundItemId: match.foundItem.id
+        });
+
+      navigate(`/messages/${conversation.id}`);
+    } catch (error) {
+      setMessageError(
+        error.response?.data?.message ||
+          "Could not start conversation"
+      );
+    }
+  };
 
   return (
     <div className="container">
@@ -142,11 +171,28 @@ function Matches() {
                 <span>{match.confidence} confidence</span>
               </div>
 
-              <p>
-                Matched on{" "}
-                {match.matchedOn.join(", ")}
-              </p>
+              <div className="match-actions">
+                <p>
+                  Matched on{" "}
+                  {match.matchedOn.join(", ")}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleMessage(match)
+                  }
+                >
+                  Message
+                </button>
+              </div>
             </div>
+
+            {messageError && (
+              <p className="claim-message">
+                {messageError}
+              </p>
+            )}
 
             <MatchReasons match={match} />
 

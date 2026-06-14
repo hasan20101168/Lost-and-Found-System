@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { updateClaimRequestStatus } from "../services/claimRequestService";
+import { createConversation } from "../services/conversationService";
 
 const statusLabels = {
   PENDING: "Pending",
@@ -11,6 +13,8 @@ function ClaimRequestCard({
   canReview = false,
   onStatusChange
 }) {
+  const navigate = useNavigate();
+
   const handleDecision = async (status) => {
     try {
       const updatedClaim =
@@ -24,6 +28,22 @@ function ClaimRequestCard({
       alert(
         error.response?.data?.message ||
           "Could not update claim"
+      );
+    }
+  };
+
+  const handleMessage = async () => {
+    try {
+      const conversation =
+        await createConversation({
+          claimRequestId: claim.id
+        });
+
+      navigate(`/messages/${conversation.id}`);
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+          "Could not start conversation"
       );
     }
   };
@@ -88,6 +108,16 @@ function ClaimRequestCard({
             </button>
           </div>
         )}
+
+      <div className="claim-actions">
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={handleMessage}
+        >
+          Message
+        </button>
+      </div>
     </article>
   );
 }

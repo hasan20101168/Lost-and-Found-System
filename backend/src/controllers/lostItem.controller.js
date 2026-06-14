@@ -8,6 +8,9 @@ const {
   getOrderBy,
   sortByRelevance
 } = require("../utils/itemSearch");
+const {
+  notifyMatchesForLostItem
+} = require("../services/matchNotification.service");
 
 exports.createLostItem = async (
   req,
@@ -92,6 +95,15 @@ exports.createLostItem = async (
           userId: req.user.id
         }
       });
+
+    notifyMatchesForLostItem(item).catch(
+      (error) => {
+        console.error(
+          "Match notification failed",
+          error
+        );
+      }
+    );
 
     res.status(201).json(item);
   } catch (error) {

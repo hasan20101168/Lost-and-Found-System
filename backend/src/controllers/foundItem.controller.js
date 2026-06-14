@@ -8,6 +8,9 @@ const {
   getOrderBy,
   sortByRelevance
 } = require("../utils/itemSearch");
+const {
+  notifyMatchesForFoundItem
+} = require("../services/matchNotification.service");
 
 const validateFoundItem = (body) => {
   const requiredFields = [
@@ -115,6 +118,15 @@ exports.createFoundItem = async (req, res) => {
           userId: req.user.id
         }
       });
+
+    notifyMatchesForFoundItem(item).catch(
+      (error) => {
+        console.error(
+          "Match notification failed",
+          error
+        );
+      }
+    );
 
     res.status(201).json(item);
   } catch (error) {

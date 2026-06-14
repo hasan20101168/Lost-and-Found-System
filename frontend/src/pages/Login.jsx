@@ -29,12 +29,16 @@ function Login() {
     e.preventDefault();
 
     try {
-      await login(
+      const loggedInUser = await login(
         formData.email,
         formData.password
       );
 
-      navigate("/dashboard");
+      navigate(
+        loggedInUser.role === "ADMIN"
+          ? "/admin"
+          : "/dashboard"
+      );
     } catch (error) {
       alert(
         error.response?.data

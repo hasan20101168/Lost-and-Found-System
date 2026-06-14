@@ -62,6 +62,8 @@ export const AuthProvider = ({
     );
 
     setUser(data.user);
+
+    return data.user;
   };
 
   const register = async (
@@ -81,6 +83,8 @@ export const AuthProvider = ({
     );
 
     setUser(data.user);
+
+    return data.user;
   };
 
   const logout = () => {
