@@ -1,4 +1,7 @@
-import { Link } from "react-router-dom";
+import {
+  Link,
+  NavLink
+} from "react-router-dom";
 
 import { useAuth } from "../context/useAuth";
 
@@ -9,81 +12,78 @@ function Navbar() {
   } = useAuth();
 
   return (
-    <nav
-      style={{
-        padding: "15px",
-        display: "flex",
-        gap: "15px"
-      }}
-    >
-      <Link to="/">
-        Home
-      </Link>
-
-      <Link to="/lost-items">
-        Lost Items
-      </Link>
-
-      <Link to="/found-items">
-        Found Items
-      </Link>
-
-      <Link to="/matches">
-        Matches
-      </Link>
-
-      {user ? (
-      <>
-        <Link to="/dashboard">
-          Dashboard
+    <header className="site-header">
+      <nav className="site-nav">
+        <Link
+          className="site-brand"
+          to="/"
+        >
+          FoundIt
         </Link>
 
-        {user.role === "ADMIN" && (
-          <Link to="/admin">
-            Admin
-          </Link>
-        )}
+        <div className="site-nav-links">
+          <NavLink to="/">
+            Dashboard
+          </NavLink>
 
-        <Link to="/create-lost-item">
-          Report Lost Item
-        </Link>
+          <NavLink to="/lost-items">
+            Search
+          </NavLink>
 
-        <Link to="/create-found-item">
-          Report Found Item
-        </Link>
+          <NavLink to="/matches">
+            Matches
+          </NavLink>
 
-        <Link to="/my-claims">
-          My Claims
-        </Link>
+          <NavLink to="/found-items">
+            Found
+          </NavLink>
+        </div>
 
-        <Link to="/review-claims">
-          Review Claims
-        </Link>
+        <div className="site-nav-actions">
+          {user ? (
+            <>
+              <NavLink to="/dashboard">
+                My Dashboard
+              </NavLink>
 
-        <Link to="/messages">
-          Messages
-        </Link>
+              {user.role === "ADMIN" && (
+                <NavLink to="/admin">
+                  Admin
+                </NavLink>
+              )}
 
-        <Link to="/notifications">
-          Notifications
-        </Link>
+              <NavLink to="/notifications">
+                Alerts
+              </NavLink>
 
-        <button onClick={logout}>
-          Logout
-        </button>
-      </>
-    ) : (
-      <>
-        <Link to="/login">
-          Login
-        </Link>
+              <NavLink to="/messages">
+                Messages
+              </NavLink>
 
-        <Link to="/register">
-          Register
-        </Link>
-      </>
-    )}
-    </nav>
+              <button
+                type="button"
+                onClick={logout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login">
+                Login
+              </NavLink>
+
+              <NavLink
+                className="site-nav-pill"
+                to="/register"
+              >
+                Register
+              </NavLink>
+            </>
+          )}
+        </div>
+      </nav>
+    </header>
   );
 }
 
