@@ -17,13 +17,24 @@ const adminRoutes = require("./routes/admin.routes");
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL
+    ].filter(Boolean),
     credentials: true,
   })
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health Check
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Lost & Found API is running",
+  });
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -36,31 +47,34 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Health Check Route
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Lost & Found API is running",
-  });
-});
-
+// Multer Error Handler
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res.status(400).json({
       message:
         err.code === "LIMIT_FILE_SIZE"
           ? "Image must be smaller than 5MB"
-          : err.message
+          : err.message,
     });
   }
 
   if (err.message === "Only image files are allowed") {
     return res.status(400).json({
-      message: err.message
+      message: err.message,
     });
   }
 
   next(err);
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
 module.exports = app;
