@@ -10,16 +10,19 @@ export const getSocket = () => {
   }
 
   if (!socket) {
-    socket = io("http://localhost:5000", {
+    socket = io(import.meta.env.VITE_SOCKET_URL, {
       auth: {
-        token
+        token,
       },
-      autoConnect: false
+      autoConnect: false,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
     });
   }
 
+  // Update token on reconnect
   socket.auth = {
-    token
+    token,
   };
 
   if (!socket.connected) {

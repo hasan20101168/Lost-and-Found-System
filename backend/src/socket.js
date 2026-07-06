@@ -46,13 +46,14 @@ const isParticipant = (conversation, userId) =>
 
 const initializeSocket = (server) => {
   const io = new Server(server, {
-    cors: {
-      origin:
-        process.env.CLIENT_URL ||
-        "http://localhost:5173",
-      credentials: true
-    }
-  });
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
+    credentials: true,
+  },
+});
 
   io.use((socket, next) => {
     try {
